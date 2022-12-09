@@ -1,7 +1,7 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() {
@@ -33,6 +33,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  downloadImage(String url) async {
+    Directory? directory = await getExternalStorageDirectory();
+    String savePath = '${directory!.path}/Image/${url.split('/').last}';
+    log('urlPath => $savePath');
+    await Dio().download(
+      url,
+      savePath,
+      onReceiveProgress: (count, total) => log('count/total => $count/$total'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,42 +53,11 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: ElevatedButton(
             onPressed: () {
-              openFile(
-                  url:
-                      'https://file-examples.com/storage/fe352586866388d59a8918d/2017/04/file_example_MP4_640_3MG.mp4',
-                  fileName: 'file_example_MP4_640_3MG.mp4');
+              downloadImage(
+                  'https://sample-videos.com/img/Sample-jpg-image-50kb.jpg');
             },
-            child: const Text('Download & Open File')),
+            child: const Text('Download Image')),
       ),
     );
-  }
-
-  Future<void> openFile({required String url, String? fileName}) async {
-    final file = await downloadFile(url, fileName!);
-    if (file == null) return;
-    print('Path : ${file.path}');
-    OpenFile.open(file.path);
-  }
-
-  Future<File?> downloadFile(String url, String fileName) async {
-    final appStorge = await getApplicationDocumentsDirectory();
-    final file = File('${appStorge.path}/$fileName');
-
-    try {
-      final response = await Dio().get(url,
-          options: Options(
-            responseType: ResponseType.bytes,
-            followRedirects: false,
-            receiveTimeout: 0,
-          ));
-
-      final raf = file.openSync(mode: FileMode.write);
-      raf.writeFromSync(response.data);
-      await raf.close();
-
-      return file;
-    } catch (e) {
-      return null;
-    }
   }
 }
