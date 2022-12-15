@@ -4,17 +4,19 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class PdfDownloadPage extends StatefulWidget {
-  const PdfDownloadPage({super.key});
+class PdfDownloadFuturePage extends StatefulWidget {
+  const PdfDownloadFuturePage({super.key});
 
   @override
-  State<PdfDownloadPage> createState() => _PdfDownloadPageState();
+  State<PdfDownloadFuturePage> createState() => _PdfDownloadFuturePageState();
 }
 
-class _PdfDownloadPageState extends State<PdfDownloadPage> {
+class _PdfDownloadFuturePageState extends State<PdfDownloadFuturePage> {
+  List<FileSystemEntity> imageList = [];
   Future<void> downloadPdf(String url) async {
     Directory? directory = await getExternalStorageDirectory();
     String savePath = '${directory!.path}/Pdf/${url.split('/').last}';
@@ -29,8 +31,8 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
   Future<void> getDownloadedPdf() async {
     Directory? directory = await getExternalStorageDirectory();
     Directory path = Directory('${directory!.path}/Pdf/');
-    List<FileSystemEntity> imageList = path.listSync();
-    streamSink.add(imageList);
+    setState(() => imageList = path.listSync());
+    log('imageList :$imageList');
   }
 
   @override
@@ -47,52 +49,45 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
         actions: [
           IconButton(
               onPressed: () async {
-                await downloadPdf(pdfUrlList[0])
+                await downloadPdf(pdfUrlList[3])
                     .then((value) => getDownloadedPdf());
               },
               icon: const Icon(Icons.download))
         ],
       ),
-      body: Center(
-        child: StreamBuilder(
-          stream: stream,
-          builder: (context, snapshot) {
-            log('snapshot.data.toString() : ${snapshot.data.toString()}');
-            if (snapshot.hasData) {
-              return ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.picture_as_pdf),
-                    title: Text(snapshot.data![index].path.split('/').last),
-                    trailing: Text('${index + 1}'),
-                    onTap: () async {
-                      // await OpenFile.open(snapshot.data![index].path);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => OfflinePdfViewer(
-                              pdfLink: snapshot.data![index].path),
-                        ),
-                      );
+      body: imageList.isEmpty
+          ? const Center(
+              child: Text('Empty Data'),
+            )
+          : ListView.builder(
+              itemCount: imageList.length,
+              itemBuilder: (context, index) => Card(
+                child: ListTile(
+                  leading: const Icon(Icons.picture_as_pdf),
+                  title: Text(imageList[index].path.split('/').last),
+                  trailing: IconButton(
+                    onPressed: () {
+                      imageList[index]
+                          .delete()
+                          .then((value) => getDownloadedPdf());
                     },
+                    icon: const Icon(Icons.delete),
                   ),
+                  onTap: () async {
+                    // await OpenFile.open(imageList[index].path); // outside app
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => OfflinePdfViewer(
+                            pdfLink: imageList[index].path), // inside app
+                      ),
+                    );
+                  },
                 ),
-              );
-            } else if (snapshot.hasError) {
-              return const Text('Snapshot has Error');
-            } else {
-              return const Text('No Image');
-            }
-          },
-        ),
-      ),
+              ),
+            ),
     );
   }
 }
-
-StreamController<List<FileSystemEntity>> streamController = StreamController();
-StreamSink streamSink = streamController.sink;
-Stream<List<FileSystemEntity>> stream = streamController.stream;
 
 List<String> pdfUrlList = [
   'https://www.africau.edu/images/default/sample.pdf',

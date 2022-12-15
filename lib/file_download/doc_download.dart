@@ -4,20 +4,21 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class PdfDownloadPage extends StatefulWidget {
-  const PdfDownloadPage({super.key});
+class DocDownloadPage extends StatefulWidget {
+  const DocDownloadPage({super.key});
 
   @override
-  State<PdfDownloadPage> createState() => _PdfDownloadPageState();
+  State<DocDownloadPage> createState() => _DocDownloadPageState();
 }
 
-class _PdfDownloadPageState extends State<PdfDownloadPage> {
+class _DocDownloadPageState extends State<DocDownloadPage> {
   Future<void> downloadPdf(String url) async {
     Directory? directory = await getExternalStorageDirectory();
-    String savePath = '${directory!.path}/Pdf/${url.split('/').last}';
+    String savePath = '${directory!.path}/Doc/${url.split('/').last}';
     log('urlPath => $savePath');
     await Dio().download(
       url,
@@ -26,9 +27,9 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
     );
   }
 
-  Future<void> getDownloadedPdf() async {
+  Future<void> getDownloadedDoc() async {
     Directory? directory = await getExternalStorageDirectory();
-    Directory path = Directory('${directory!.path}/Pdf/');
+    Directory path = Directory('${directory!.path}/Doc/');
     List<FileSystemEntity> imageList = path.listSync();
     streamSink.add(imageList);
   }
@@ -36,7 +37,7 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
   @override
   void initState() {
     super.initState();
-    getDownloadedPdf();
+    getDownloadedDoc();
   }
 
   @override
@@ -47,8 +48,8 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
         actions: [
           IconButton(
               onPressed: () async {
-                await downloadPdf(pdfUrlList[0])
-                    .then((value) => getDownloadedPdf());
+                await downloadPdf(doxUrlList[1])
+                    .then((value) => getDownloadedDoc());
               },
               icon: const Icon(Icons.download))
         ],
@@ -57,7 +58,7 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
         child: StreamBuilder(
           stream: stream,
           builder: (context, snapshot) {
-            log('snapshot.data.toString() : ${snapshot.data.toString()}');
+            log(snapshot.data.toString());
             if (snapshot.hasData) {
               return ListView.builder(
                 itemCount: snapshot.data!.length,
@@ -67,13 +68,13 @@ class _PdfDownloadPageState extends State<PdfDownloadPage> {
                     title: Text(snapshot.data![index].path.split('/').last),
                     trailing: Text('${index + 1}'),
                     onTap: () async {
-                      // await OpenFile.open(snapshot.data![index].path);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => OfflinePdfViewer(
-                              pdfLink: snapshot.data![index].path),
-                        ),
-                      );
+                      await OpenFile.open(snapshot.data![index].path);
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (context) => OfflinePdfViewer(
+                      //         pdfLink: snapshot.data![index].path),
+                      //   ),
+                      // );
                     },
                   ),
                 ),
@@ -94,12 +95,10 @@ StreamController<List<FileSystemEntity>> streamController = StreamController();
 StreamSink streamSink = streamController.sink;
 Stream<List<FileSystemEntity>> stream = streamController.stream;
 
-List<String> pdfUrlList = [
-  'https://www.africau.edu/images/default/sample.pdf',
-  'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-  'https://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf',
-  'https://filesamples.com/samples/document/pdf/sample3.pdf',
-  'https://cdn.syncfusion.com/content/PDFViewer/flutter-succinctly.pdf',
+List<String> doxUrlList = [
+  'https://file-examples.com/wp-content/uploads/2017/02/file-sample_100kB.doc',
+  'https://filesamples.com/formats/docx',
+  'https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_100KB_DOCX.docx',
 ];
 
 class OfflinePdfViewer extends StatelessWidget {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_download/file_download/image_download.dart';
+import 'package:flutter_download/file_download/pdf_download_future.dart';
 
+import 'file_download/doc_download.dart';
 import 'file_download/pdf_download.dart';
 
 void main() {
@@ -39,16 +41,16 @@ class HomePage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ImageDownloadPage(),
-                  ),
-                );
-              },
-              child: const Text('Image Download'),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(
+            //         builder: (context) => const ImageDownloadPage(),
+            //       ),
+            //     );
+            //   },
+            //   child: const Text('Image Download'),
+            // ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
@@ -63,11 +65,11 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const PdfDownloadPage(),
+                    builder: (context) => const PdfDownloadFuturePage(),
                   ),
                 );
               },
-              child: const Text('Doc Download'),
+              child: const Text('Pdf Download: Future'),
             ),
           ],
         ),
