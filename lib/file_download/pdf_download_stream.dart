@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class PdfDownloadPage extends StatefulWidget {
-  const PdfDownloadPage({super.key});
+class PdfDownloadPageStream extends StatefulWidget {
+  const PdfDownloadPageStream({super.key});
 
   @override
-  State<PdfDownloadPage> createState() => _PdfDownloadPageState();
+  State<PdfDownloadPageStream> createState() => _PdfDownloadPageStreamState();
 }
 
-class _PdfDownloadPageState extends State<PdfDownloadPage> {
+class _PdfDownloadPageStreamState extends State<PdfDownloadPageStream> {
   Future<void> downloadPdf(String url) async {
     Directory? directory = await getExternalStorageDirectory();
     String savePath = '${directory!.path}/Pdf/${url.split('/').last}';
